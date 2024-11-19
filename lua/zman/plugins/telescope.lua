@@ -14,6 +14,12 @@ return {
         local telescope = require('telescope')
         local builtin = require('telescope.builtin')
 
+        telescope.setup({
+            defaults = {
+                file_ignore_patterns = { "%.dll" }
+            }
+        })
+
         telescope.load_extension("fzf")
 
         vim.keymap.set('n', '<leader>pf', builtin.find_files, { desc = 'Telescope find files' })
