@@ -1,6 +1,6 @@
 #!/bin/bash
 # This file is intended to provide some QoL commands for working with Neovim in the Konsole terminal emulator
-# Namely, it provides an alias `n` which starts up Neovim is the correct profile with the correct visual esttings, and then resets them to previous values upon exit
+# Namely, it provides an alias `n` which starts up Neovim in the correct profile with the correct visual esttings, and then resets them to previous values upon exit
 # (May also setup tmux in a future version, although not currently implemented)
 
 # It also provides an `nvim-update` command, which updates my Neovim installation since I am running the nightly build
@@ -58,6 +58,25 @@ function menubar()
     fi
 }
 
+function toolbars()
+{
+    local OPTIND
+    while getopts 'o' flag; do
+        case "${flag}" in
+            o)  local statusMain=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:mainToolBar | xargs))
+                local statusSession=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:sessionToolbar | xargs))
+                echo "${statusMain[1]} ${statusSession[1]}" ;;
+            ?)  printf "Usage: %s: [-o] true|false true|false\n" $0
+                return 2 ;;
+        esac
+    done
+    shift $(($OPTIND - 1))
+
+    local args=($(echo "$*" | xargs))
+    dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --type=method_call org.kde.konsole.KXmlGuiWindow.setToolBarVisible string:mainToolBar boolean:"${args[0]}"
+    dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --type=method_call org.kde.konsole.KXmlGuiWindow.setToolBarVisible string:sessionToolbar boolean:"${args[1]}"
+}
+
 
 # MAIN COMMANDS
 
@@ -80,6 +99,7 @@ function n()
     if [ -z "$disable_fullscreen_flag" ]; then
         local full=$(fullscreen -o true)
         local menu=$(menubar -o false)
+        local bars=$(toolbars -o false false)
     fi
 
     if [ ! -z "$*" ]; then
@@ -92,6 +112,7 @@ function n()
     if [ -z "$disable_fullscreen_flag" ]; then
         fullscreen "$full"
         menubar "$menu"
+        toolbars "$bars"
     fi
 }
 
