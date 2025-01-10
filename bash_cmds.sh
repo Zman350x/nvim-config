@@ -1,7 +1,6 @@
 #!/bin/bash
 # This file is intended to provide some QoL commands for working with Neovim in the Konsole terminal emulator
-# Namely, it provides an alias `n` which starts up Neovim in the correct profile with the correct visual esttings, and then resets them to previous values upon exit
-# (May also setup tmux in a future version, although not currently implemented)
+# Namely, it provides an aliases `n` and `t` which start up Neovim and Tmux respectively in the correct profile with the correct visual settings, and then resets them to previous values upon exit
 
 # It also provides an `nvim-update` command, which updates my Neovim installation since I am running the nightly build
 
@@ -82,14 +81,53 @@ function toolbars()
 
 # By default the command puts the terminal into fullscreen. Pass `-f` to disable this functionality
 # NOTE: This does mess with flags intended to be passed to Neovim itself, so just run `nvim` if you need to use flags
+# NOTE: All additional behavior disabled if run in tmux, just acts as an alias for `nvim .` (or `nvim [args]` if called with args)
 function n()
+{
+    if [[ "$TERM" != tmux* ]]; then
+        local disable_fullscreen_flag=''
+        local OPTIND
+        while getopts 'f' flag; do
+            case "${flag}" in
+                f)  disable_fullscreen_flag=1 ;;
+                ?)  printf "Usage: %s: [-f] [nvim_args]\n" $0
+                    return 2 ;;
+            esac
+        done
+        shift $(($OPTIND - 1))
+
+        local prof=$(profile -o nvim)
+        if [ -z "$disable_fullscreen_flag" ]; then
+            local full=$(fullscreen -o true)
+            local menu=$(menubar -o false)
+            local bars=$(toolbars -o false false)
+        fi
+    fi
+
+    if [ ! -z "$*" ]; then
+        nvim $*
+    else
+        nvim .
+    fi
+
+    if [[ "$TERM" != tmux* ]]; then
+        profile "$prof"
+        if [ -z "$disable_fullscreen_flag" ]; then
+            fullscreen "$full"
+            menubar "$menu"
+            toolbars "$bars"
+        fi
+    fi
+}
+
+function t()
 {
     local disable_fullscreen_flag=''
     local OPTIND
     while getopts 'f' flag; do
         case "${flag}" in
             f)  disable_fullscreen_flag=1 ;;
-            ?)  printf "Usage: %s: [-f] [nvim_args]\n" $0
+            ?)  printf "Usage: %s: [-f] [tmux_args]\n" $0
                 return 2 ;;
         esac
     done
@@ -102,11 +140,7 @@ function n()
         local bars=$(toolbars -o false false)
     fi
 
-    if [ ! -z "$*" ]; then
-        nvim $*
-    else
-        nvim .
-    fi
+    tmux
 
     profile "$prof"
     if [ -z "$disable_fullscreen_flag" ]; then
@@ -114,6 +148,16 @@ function n()
         menubar "$menu"
         toolbars "$bars"
     fi
+}
+
+# Sometimes, especially when developing/testing these commands, changes won't revert properly
+# This simply resets things to my preferred defaults
+function reset_konsole()
+{
+    profile "Profile 1"
+    fullscreen false
+    menubar false
+    toolbars true true
 }
 
 function nvim-update()
