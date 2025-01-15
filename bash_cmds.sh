@@ -120,6 +120,8 @@ function n()
     fi
 }
 
+# By default the command puts the terminal into fullscreen. Pass `-f` to disable this functionality
+# NOTE: This does mess with flags intended to be passed to Tmux itself, so just run `tmux` if you need to use flags
 function t()
 {
     local disable_fullscreen_flag=''
@@ -140,7 +142,11 @@ function t()
         local bars=$(toolbars -o false false)
     fi
 
-    tmux
+    if [ ! -z "$*" ]; then
+        tmux $*
+    else
+        tmux
+    fi
 
     profile "$prof"
     if [ -z "$disable_fullscreen_flag" ]; then
