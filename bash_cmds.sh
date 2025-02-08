@@ -1,6 +1,6 @@
 #!/bin/bash
 # This file is intended to provide some QoL commands for working with Neovim in the Konsole terminal emulator
-# Namely, it provides an aliases `n` and `t` which start up Neovim and Tmux respectively in the correct profile with the correct visual settings, and then resets them to previous values upon exit
+# Namely, it provides the aliases `n` and `t` which start up Neovim and Tmux respectively in the correct profile with the correct visual settings, and then resets them to previous values upon exit
 
 # It also provides an `nvim-update` command, which updates my Neovim installation since I am running the nightly build
 
@@ -124,6 +124,11 @@ function n()
 # NOTE: This does mess with flags intended to be passed to Tmux itself, so just run `tmux` if you need to use flags
 function t()
 {
+    if [[ "$TERM" == tmux* ]]; then
+        printf "Already in tmux\n"
+        return 1
+    fi
+
     local disable_fullscreen_flag=''
     local OPTIND
     while getopts 'f' flag; do
@@ -136,6 +141,7 @@ function t()
     shift $(($OPTIND - 1))
 
     local prof=$(profile -o nvim)
+    playerctld daemon > /dev/null 2>&1
     if [ -z "$disable_fullscreen_flag" ]; then
         local full=$(fullscreen -o true)
         local menu=$(menubar -o false)
@@ -149,6 +155,7 @@ function t()
     fi
 
     profile "$prof"
+    pkill playerctld
     if [ -z "$disable_fullscreen_flag" ]; then
         fullscreen "$full"
         menubar "$menu"
