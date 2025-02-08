@@ -168,9 +168,9 @@ function reset_konsole()
 
 function nvim-update()
 {
-    curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
-    sudo rm -rf /usr/local/bin/nvim-linux64
-    sudo tar -C /usr/local/bin -xzvf nvim-linux64.tar.gz
-    rm nvim-linux64.tar.gz
+    curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz
+    sudo rm -rf /usr/local/bin/nvim-linux-x86_64
+    sudo tar -C /usr/local/bin -xzvf nvim-linux-x86_64.tar.gz
+    rm nvim-linux-x86_64.tar.gz
 }
 
