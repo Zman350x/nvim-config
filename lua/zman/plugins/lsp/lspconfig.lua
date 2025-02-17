@@ -5,6 +5,26 @@ return {
         "hrsh7th/cmp-nvim-lsp",
         { "antosha417/nvim-lsp-file-operations", config = true },
         { "folke/neodev.nvim", opts = {} },
+        { "williamboman/mason.nvim",
+            opts = {
+                ui = {
+                    icons = {
+                        package_installed = "✓",
+                        package_pending = "➜",
+                        package_uninstalled = "✗",
+                    },
+                },
+            },
+        },
+        { "williamboman/mason-lspconfig.nvim",
+            opts = {
+                ensure_installed = {
+                    'lua_ls',
+                    'omnisharp_mono'
+                },
+            }
+        },
+        { "Hoffs/omnisharp-extended-lsp.nvim", lazy = true },
     },
     config = function()
         -- import lspconfig plugin
@@ -73,6 +93,24 @@ return {
             function(server_name)
                 lspconfig[server_name].setup({
                     capabilities = capabilities,
+                })
+            end,
+            ["omnisharp_mono"] = function()
+                lspconfig["omnisharp_mono"].setup({
+                    capabilities = capabilities,
+                    root_dir = function(fname)
+                        local primary = require("lspconfig").util.root_pattern("*.sln")(fname)
+                        local fallback = require("lspconfig").util.root_pattern("*.csproj")(fname)
+                        return primary or fallback
+                    end,
+                    handlers = { ["textDocument/definition"] = require('omnisharp_extended').definition_handler,
+                                 ["textDocument/typeDefinition"] = require('omnisharp_extended').type_definition_handler,
+                                 ["textDocument/references"] = require('omnisharp_extended').references_handler,
+                                 ["textDocument/implementation"] = require('omnisharp_extended').implementation_handler, },
+                    enable_roslyn_analyzers = true,
+                    organize_imports_on_format = true,
+                    enable_import_completion = true,
+                    require("omnisharp_extended").telescope_lsp_definitions()
                 })
             end,
             ["lua_ls"] = function()
