@@ -33,6 +33,8 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "Remove Q binding" })
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = "Replace current word across current file" })
 vim.keymap.set("n", "<leader>X", "<cmd>!chmod +x %<CR>", { silent = true, desc = "Make current file executable" })
 
+vim.keymap.set("n", "<leader>xc", ":w !wc -m<CR>", { desc = "Character count on current buffer" })
+
 -- Project specific
 vim.keymap.set("n", "<leader>hd", ":make! debug<CR>", { desc = "Build Debug Configuration" })
 vim.keymap.set("n", "<leader>hD", ":make! clean<CR>:make! debug<CR>", { desc = "Rebuild Debug Configuration" })
