@@ -1,6 +1,7 @@
 vim.g.mapleader = " "
 
 vim.keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode with jk" })
+vim.keymap.set("v", "jk", "<ESC>", { desc = "Exit visual mode with jk" })
 vim.keymap.set("n", "<leader>n", ":nohl<CR>", { desc = "Clear search highlights" })
 
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex, { desc = "Return to file explorer" })
