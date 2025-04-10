@@ -165,7 +165,7 @@ function t()
 
 # Sometimes, especially when developing/testing these commands, changes won't revert properly
 # This simply resets things to my preferred defaults
-function reset_konsole()
+function reset-konsole()
 {
     profile "Profile 1"
     fullscreen false
