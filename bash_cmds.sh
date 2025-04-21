@@ -181,3 +181,11 @@ function nvim-update()
     rm nvim-linux-x86_64.tar.gz
 }
 
+function nvim-update-revert-stable()
+{
+    curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+    sudo rm -rf /usr/local/bin/nvim-linux-x86_64
+    sudo tar -C /usr/local/bin -xzvf nvim-linux-x86_64.tar.gz
+    rm nvim-linux-x86_64.tar.gz
+}
+
