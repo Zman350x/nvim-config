@@ -20,7 +20,8 @@ return {
             opts = {
                 ensure_installed = {
                     'lua_ls',
-                    'omnisharp_mono'
+                    'omnisharp_mono',
+                    'clangd'
                 },
             }
         },
@@ -88,6 +89,42 @@ return {
         -- used to enable autocompletion (assign to every lsp server config)
         local capabilities = cmp_nvim_lsp.default_capabilities()
 
+
+        local function is_cairns()
+            local cwd = vim.loop.fs_realpath(vim.loop.cwd())
+            local cairns_dir = vim.loop.fs_realpath(vim.fn.expand('~/Documents/Cairns'))
+
+            if not cwd or not cairns_dir then
+                return false
+            end
+
+            return string.sub(cwd, 1, #cairns_dir) == cairns_dir
+        end
+
+        local function get_docker_container_id()
+            local handle = io.popen("docker container ls | awk 'NR==2 { print $1 }'")
+            if handle then
+                local result = handle:read("*a")
+                handle:close()
+                return vim.trim(result)
+            end
+        end
+
+        local function get_docker_clangd_cmd()
+            local container_id = get_docker_container_id()
+            if container_id and #container_id > 0 then
+                return { "docker", "exec", "-i", container_id, "clangd-10", "--log=verbose", "--pretty" }
+            end
+            return nil
+        end
+
+        local clangd_opts = {}
+
+        local docker_clangd_cmd = get_docker_clangd_cmd()
+        if is_cairns() and docker_clangd_cmd then
+            clangd_opts.cmd = docker_clangd_cmd
+        end
+
         mason_lspconfig.setup_handlers({
             -- default handler for installed servers
             function(server_name)
@@ -130,6 +167,9 @@ return {
                     },
                 })
             end,
+            ["clangd"] = function()
+                lspconfig["clangd"].setup(clangd_opts)
+            end
         })
     end,
 }
