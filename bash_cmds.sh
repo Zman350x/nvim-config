@@ -1,21 +1,18 @@
 #!/bin/bash
-# This file is intended to provide some QoL commands for working with Neovim in the Konsole terminal emulator
-# Namely, it provides the aliases `n` and `t` which start up Neovim and Tmux respectively in the correct profile with the correct visual settings, and then resets them to previous values upon exit
+# This file is intended to provide some QoL commands for working with Neovim/tmux in the Konsole terminal emulator
 
 # It also provides an `nvim-update` command, which updates my Neovim installation since I am running the nightly build
 
-
-# HELPER FUNCTIONS (can be used as standalone commands in Konsole)
 # Pass true/false to these functions to toggle their respective properties. Passing the `-o` flag will return the old value of the property
 
 function profile()
 {
     local OPTIND
-    while getopts 'o' flag; do
+    while getopts 'oh' flag; do
         case "${flag}" in
-            o)  dbus-send --dest=$KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION --print-reply=literal --type=method_call org.kde.konsole.Session.profile | xargs ;;
-            ?)  printf "Usage: %s: [-o] true|false\n" $0
-                return 2 ;;
+            o)    dbus-send --dest=$KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION --print-reply=literal --type=method_call org.kde.konsole.Session.profile | xargs ;;
+            h|?)  printf "Usage: %s: [-o] <profile name>\n" $0
+                  return 1 ;;
         esac
     done
     shift $(($OPTIND - 1))
@@ -25,12 +22,12 @@ function profile()
 function fullscreen()
 {
     local OPTIND
-    while getopts 'o' flag; do
+    while getopts 'oh' flag; do
         case "${flag}" in
-            o)  local status=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.freedesktop.DBus.Properties.Get string:org.qtproject.Qt.QWidget string:fullScreen | xargs))
-                echo ${status[2]} ;;
-            ?)  printf "Usage: %s: [-o] true|false\n" $0
-                return 2 ;;
+            o)    local status=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.freedesktop.DBus.Properties.Get string:org.qtproject.Qt.QWidget string:fullScreen | xargs))
+                  echo ${status[2]} ;;
+            h|?)  printf "Usage: %s: [-o] true|false\n" $0
+                  return 1 ;;
         esac
     done
     shift $(($OPTIND - 1))
@@ -44,11 +41,11 @@ function menubar()
 {
     local OPTIND
     local status=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1/actions/options_show_menubar --print-reply=literal --type=method_call org.freedesktop.DBus.Properties.Get string:org.qtproject.Qt.QAction string:checked | xargs))
-    while getopts 'o' flag; do
+    while getopts 'oh' flag; do
         case "${flag}" in
-            o)  echo ${status[2]} ;;
-            ?)  printf "Usage: %s: [-o] true|false\n" $0
-                return 2 ;;
+            o)    echo ${status[2]} ;;
+            h|?)  printf "Usage: %s: [-o] true|false\n" $0
+                  return 1 ;;
         esac
     done
     shift $(($OPTIND - 1))
@@ -60,13 +57,13 @@ function menubar()
 function toolbars()
 {
     local OPTIND
-    while getopts 'o' flag; do
+    while getopts 'oh' flag; do
         case "${flag}" in
-            o)  local statusMain=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:mainToolBar | xargs))
-                local statusSession=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:sessionToolbar | xargs))
-                echo "${statusMain[1]} ${statusSession[1]}" ;;
-            ?)  printf "Usage: %s: [-o] true|false true|false\n" $0
-                return 2 ;;
+            o)    local statusMain=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:mainToolBar | xargs))
+                  local statusSession=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:sessionToolbar | xargs))
+                  echo "${statusMain[1]} ${statusSession[1]}" ;;
+            h|?)  printf "Usage: %s: [-o] true|false true|false\n" $0
+                  return 2 ;;
         esac
     done
     shift $(($OPTIND - 1))
@@ -74,93 +71,6 @@ function toolbars()
     local args=($(echo "$*" | xargs))
     dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --type=method_call org.kde.konsole.KXmlGuiWindow.setToolBarVisible string:mainToolBar boolean:"${args[0]}"
     dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --type=method_call org.kde.konsole.KXmlGuiWindow.setToolBarVisible string:sessionToolbar boolean:"${args[1]}"
-}
-
-
-# MAIN COMMANDS
-
-# By default the command puts the terminal into fullscreen. Pass `-f` to disable this functionality
-# NOTE: This does mess with flags intended to be passed to Neovim itself, so just run `nvim` if you need to use flags
-# NOTE: All additional behavior disabled if run in tmux, just acts as an alias for `nvim .` (or `nvim [args]` if called with args)
-function n()
-{
-    if [[ "$TERM" != tmux* ]]; then
-        local disable_fullscreen_flag=''
-        local OPTIND
-        while getopts 'f' flag; do
-            case "${flag}" in
-                f)  disable_fullscreen_flag=1 ;;
-                ?)  printf "Usage: %s: [-f] [nvim_args]\n" $0
-                    return 2 ;;
-            esac
-        done
-        shift $(($OPTIND - 1))
-
-        local prof=$(profile -o nvim)
-        if [ -z "$disable_fullscreen_flag" ]; then
-            local full=$(fullscreen -o true)
-            local menu=$(menubar -o false)
-            local bars=$(toolbars -o false false)
-        fi
-    fi
-
-    if [ ! -z "$*" ]; then
-        nvim $*
-    else
-        nvim .
-    fi
-
-    if [[ "$TERM" != tmux* ]]; then
-        profile "$prof"
-        if [ -z "$disable_fullscreen_flag" ]; then
-            fullscreen "$full"
-            menubar "$menu"
-            toolbars "$bars"
-        fi
-    fi
-}
-
-# By default the command puts the terminal into fullscreen. Pass `-f` to disable this functionality
-# NOTE: This does mess with flags intended to be passed to Tmux itself, so just run `tmux` if you need to use flags
-function t()
-{
-    if [[ "$TERM" == tmux* ]]; then
-        printf "Already in tmux\n"
-        return 1
-    fi
-
-    local disable_fullscreen_flag=''
-    local OPTIND
-    while getopts 'f' flag; do
-        case "${flag}" in
-            f)  disable_fullscreen_flag=1 ;;
-            ?)  printf "Usage: %s: [-f] [tmux_args]\n" $0
-                return 2 ;;
-        esac
-    done
-    shift $(($OPTIND - 1))
-
-    local prof=$(profile -o nvim)
-    playerctld daemon > /dev/null 2>&1
-    if [ -z "$disable_fullscreen_flag" ]; then
-        local full=$(fullscreen -o true)
-        local menu=$(menubar -o false)
-        local bars=$(toolbars -o false false)
-    fi
-
-    if [ ! -z "$*" ]; then
-        tmux $*
-    else
-        tmux
-    fi
-
-    profile "$prof"
-    pkill playerctld
-    if [ -z "$disable_fullscreen_flag" ]; then
-        fullscreen "$full"
-        menubar "$menu"
-        toolbars "$bars"
-    fi
 }
 
 # Sometimes, especially when developing/testing these commands, changes won't revert properly

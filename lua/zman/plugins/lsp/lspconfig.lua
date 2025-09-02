@@ -21,7 +21,8 @@ return {
                 ensure_installed = {
                     'lua_ls',
                     'omnisharp_mono',
-                    'clangd'
+                    'clangd',
+                    'pylsp'
                 },
             }
         },
@@ -169,6 +170,18 @@ return {
             end,
             ["clangd"] = function()
                 lspconfig["clangd"].setup(clangd_opts)
+            end,
+            ["pylsp"] = function()
+                lspconfig["pylsp"].setup({
+                    capabilities = capabilities,
+                    settings = {
+                        pylsp = {
+                            plugins = {
+                                pycodestyle = { enabled = false }
+                            }
+                        }
+                    }
+                })
             end
         })
     end,
