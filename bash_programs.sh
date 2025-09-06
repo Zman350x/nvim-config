@@ -86,6 +86,6 @@ case "$(basename "$0")" in
         ;;
 
     *)
-        printf "Invalid command\n"
+        printf "Invalid command: $(basename "$0")\n"
         ;;
 esac
