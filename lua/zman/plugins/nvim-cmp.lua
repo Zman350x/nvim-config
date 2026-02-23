@@ -12,6 +12,10 @@ return {
             build = "make install_jsregexp",
         },
         "saadparwaiz1/cmp_luasnip", -- for autocompletion
+        {
+            "PeterCardenas/cmp-omni", -- Omnifunc
+            branch = "support-treesitter-query-complete",
+        },
         "rafamadriz/friendly-snippets", -- useful snippets
         "onsails/lspkind.nvim", -- vs-code like pictograms
     },
@@ -47,6 +51,7 @@ return {
             sources = cmp.config.sources({
                 { name = "nvim_lsp" }, -- lsp
                 { name = "nvim_lsp_signature_help" }, -- signatures
+                { name = "omni", option = { disable_omnifuncs = { 'v:lua.vim.lsp.omnifunc' } } }, -- Omnifunc
                 { name = "luasnip" }, -- snippets
                 { name = "buffer" }, -- text within current buffer
                 { name = "path" }, -- file system paths
