@@ -34,9 +34,14 @@ vim.keymap.set("n", "Q", "<nop>", { desc = "Remove Q binding" })
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = "Replace current word across current file" })
 vim.keymap.set("n", "<leader>X", "<cmd>!chmod +x %<CR>", { silent = true, desc = "Make current file executable" })
 
-vim.keymap.set("n", "<leader>xc", ":w !wc -m<CR>", { desc = "Character count on current buffer" })
+vim.keymap.set("n", "<leader>xcc", ":w !wc -m<CR>", { desc = "Char count on current buffer" })
+vim.keymap.set("n", "<leader>xcw", ":w !wc -w<CR>", { desc = "Word count on current buffer" })
+vim.keymap.set("n", "<leader>xcb", ":w !wc -c<CR>", { desc = "Byte count on current buffer" })
+vim.keymap.set("n", "<leader>xcl", ":w !wc -l<CR>", { desc = "Line count on current buffer" })
 
 -- Project specific
+vim.keymap.set("n", "<leader>hb", ":make!<CR>", { desc = "Build Default Configuration" })
+vim.keymap.set("n", "<leader>hB", ":make! clean<CR>:make!<CR>", { desc = "Rebuild Default Configuration" })
 vim.keymap.set("n", "<leader>hd", ":make! debug<CR>", { desc = "Build Debug Configuration" })
 vim.keymap.set("n", "<leader>hD", ":make! clean<CR>:make! debug<CR>", { desc = "Rebuild Debug Configuration" })
 vim.keymap.set("n", "<leader>hr", ":make! release<CR>", { desc = "Build Release Configuration" })
@@ -45,3 +50,4 @@ vim.keymap.set("n", "<leader>hf", ":make! full-debug<CR>", { desc = "Build Full-
 vim.keymap.set("n", "<leader>hF", ":make! clean<CR>:make! full-debug<CR>", { desc = "Rebuild Full-Debug Configuration" })
 vim.keymap.set("n", "<leader>hc", ":make! clean<CR>", { desc = "Clean" })
 vim.keymap.set("n", "<leader>hp", ":make! run<CR>", { desc = "Run" })
+vim.keymap.set("n", "<leader>hP", ":make! reset<CR>", { desc = "Reset" })

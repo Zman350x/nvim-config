@@ -7,7 +7,8 @@ return {
         {
             "nvim-telescope/telescope-fzf-native.nvim",
             build = "make"
-        }
+        },
+        "nvim-telescope/telescope-live-grep-args.nvim"
     },
 
     config = function()
@@ -21,10 +22,11 @@ return {
         })
 
         telescope.load_extension("fzf")
+        telescope.load_extension("live_grep_args")
 
         vim.keymap.set('n', '<leader>pf', builtin.find_files, { desc = 'Telescope find files' })
         vim.keymap.set('n', '<leader>pg', builtin.git_files, { desc = 'Telescope find git files' })
-        vim.keymap.set('n', '<leader>ps', builtin.live_grep, { desc = 'Telescope find string' })
+        vim.keymap.set('n', '<leader>ps', telescope.extensions.live_grep_args.live_grep_args, { desc = 'Telescope find string' })
         vim.keymap.set('n', '<leader>pc', builtin.grep_string, { desc = 'Telescope find string at cursor' })
     end
 }

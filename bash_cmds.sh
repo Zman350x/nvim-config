@@ -11,7 +11,7 @@ function profile()
     while getopts 'oh' flag; do
         case "${flag}" in
             o)    dbus-send --dest=$KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION --print-reply=literal --type=method_call org.kde.konsole.Session.profile | xargs ;;
-            h|?)  printf "Usage: %s: [-o] <profile name>\n" $0
+            h|?)  printf "Usage: %s [-o] <profile name>\n" $0
                   return 1 ;;
         esac
     done
@@ -26,7 +26,7 @@ function fullscreen()
         case "${flag}" in
             o)    local status=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.freedesktop.DBus.Properties.Get string:org.qtproject.Qt.QWidget string:fullScreen | xargs))
                   echo ${status[2]} ;;
-            h|?)  printf "Usage: %s: [-o] true|false\n" $0
+            h|?)  printf "Usage: %s [-o] true|false\n" $0
                   return 1 ;;
         esac
     done
@@ -44,7 +44,7 @@ function menubar()
     while getopts 'oh' flag; do
         case "${flag}" in
             o)    echo ${status[2]} ;;
-            h|?)  printf "Usage: %s: [-o] true|false\n" $0
+            h|?)  printf "Usage: %s [-o] true|false\n" $0
                   return 1 ;;
         esac
     done
@@ -62,7 +62,7 @@ function toolbars()
             o)    local statusMain=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:mainToolBar | xargs))
                   local statusSession=($(dbus-send --dest=$KONSOLE_DBUS_SERVICE /konsole/MainWindow_1 --print-reply=literal --type=method_call org.kde.konsole.KXmlGuiWindow.isToolBarVisible string:sessionToolbar | xargs))
                   echo "${statusMain[1]} ${statusSession[1]}" ;;
-            h|?)  printf "Usage: %s: [-o] true|false true|false\n" $0
+            h|?)  printf "Usage: %s [-o] true|false true|false\n" $0
                   return 2 ;;
         esac
     done
